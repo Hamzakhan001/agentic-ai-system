@@ -8,20 +8,22 @@ import structlog
 from app.core.config import get_settings
 
 
-configured = False
+_configured = False
 
 
 def setup_logging() -> None:
-    global configured
-    if configured:
+    global _configured
+    if _configured:
         return
 
     settings = get_settings()
+
     logging.basicConfig(
         level=getattr(logging, settings.log_level.upper(), logging.INFO),
         format="%(message)s",
         stream=sys.stdout,
     )
+
     structlog.configure(
         processors=[
             structlog.processors.TimeStamper(fmt="iso"),
@@ -30,7 +32,8 @@ def setup_logging() -> None:
         ],
         wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
     )
-    configured = True
+
+    _configured = True
 
 
 logger = structlog.get_logger()
