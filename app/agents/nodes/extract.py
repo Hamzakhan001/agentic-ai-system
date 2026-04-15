@@ -5,9 +5,9 @@ import json
 from app.agents.prompts import EXTRACTION_SYSTEM
 from app.agents.state import AgentState
 
-
 async def extract(state: AgentState, llm) -> AgentState:
     docs = state.get("retrieved_documents", [])
+
     evidence = [
         {
             "document_id": doc.id,
