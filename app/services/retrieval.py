@@ -25,3 +25,7 @@ class SimpleRetrievalService:
 
         ranked = sorted(scored, key=lambda item: item[1], reverse=True)
         return [doc for doc, score in ranked[:top_k] if score > 0] or documents[:top_k]
+ 
+        doc_terms = document.text.lower().split()
+        score = sum(query_counts[s])
+             
