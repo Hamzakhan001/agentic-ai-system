@@ -32,11 +32,12 @@ def _route_after_extract(state: AgentState) -> str:
     else:
         return "finalize"
 
-def build_graph():
+def build_graph(llm, keyword_retriever, vector_store=None):
     graph = StateGraph(AgentState)
 
     graph.add_node("intake", partial(intake, llm=llm))
-    graph.add_node("retrieve", partial(retrieve, llm=llm))
+    graph.add_node("retrieve", 
+    partial(retrieve, keyword_retriever=keyword_retriever, vector_store=vector_store))
     graph.add_node("extract", partial(extract, llm=llm))
 
     graph.add_node("draft_summary", partial(draft_summary, llm =llm))

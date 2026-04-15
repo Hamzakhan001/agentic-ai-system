@@ -14,7 +14,7 @@ async def critique(state: AgentState, llm) -> AgentState:
     ]
     critique_result = await llm.json_response(
         system=CRITIQUE_SYSTEM,
-        user=json.dumps(
+        user = json.dumps(
             {
                 "question": state["question"],
                 "task_type": state["task_type"],
