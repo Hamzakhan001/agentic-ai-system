@@ -39,7 +39,8 @@ class CriticAgent(BaseAgent):
                     "task_type": state["task_type"],
                     "draft_answer": state.get("draft_answer", ""),
                     "documents": evidence,
-                    "facts": state.get("extracted_facts",[])
+                    "facts": state.get("extracted_facts",[]),
+                    "external_context": state.get("external_context", []),
                 },
                 ensure_ascii = False
             )

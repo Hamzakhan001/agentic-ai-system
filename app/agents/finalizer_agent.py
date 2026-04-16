@@ -60,7 +60,8 @@ class FinalizeAgent(BaseAgent):
                     "draft_answer": state.get("draft_answer", ""),
                     "critique": critique,
                     "facts": state.get("extracted_facts", []),
-                    "sources": sources
+                    "sources": sources,
+                    "external_context": state.get("external_context", []),
                 },
                 ensure_ascii= False
             )

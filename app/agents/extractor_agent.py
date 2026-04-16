@@ -29,7 +29,8 @@ class ExtractorAgent(BaseAgent):
                 {
                     "question": state["question"],
                     "task_type": state["task_type"],
-                    "documents": evidence
+                    "documents": evidence,
+                    "external_context": state.get("external_context", [])
                 },
                 ensure_ascii = False
             )
