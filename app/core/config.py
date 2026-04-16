@@ -33,6 +33,10 @@ class Settings(BaseSettings):
     chunk_overlap: int = 150
     max_document_chars: int = 40000
 
+    tavily_api_key: str = ""
+    companies_house_api_key: str = ""
+
+
 
 @lru_cache()
 def get_settings() -> Settings:

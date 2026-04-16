@@ -30,3 +30,4 @@ class AgentState(TypedDict):
 
     retry_count: int
     error: Optional[str]
+    external_context: list[dict[str, Any]]

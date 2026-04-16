@@ -1,73 +1,64 @@
 from __future__ import annotations
-
 from functools import partial
-
 from langgraph.graph import END, StateGraph
 
-from app.agents.nodes.critique import critique
-from app.agents.nodes.draft import (
-    draft_summary,
-    draft_timeline,
-    draft_risk_review,
-    draft_next_steps
-)
-from app.agents.nodes.extract import extract
-from app.agents.nodes.finalize import finalize
-from app.agents.nodes.intake import intake
-from app.agents.nodes.retrieve import retrieve
+from app.agents.critic_agent import CriticAgent
+from app.agents.drafting_agent import DraftingAgent
+from app.agents.extractor_agent import ExtractorAgent
+from app.agents.finalizer_agent import FinalizeAgent
+from app.agents.retriever_agent import RetrieverAgent
+from app.agents.router_agent import RouterAgent
 from app.agents.state import AgentState
 
 
-def _route_after_extract(state: AgentState) -> str:
-    task_type = state["task_type"]
 
-    if task_type == "summary":
-        return "draft_summary"
-    elif task_type == "timeline":
-        return "draft_timeline"
-    elif task_type == "risk_review":
-        return "draft_risk_review"
-    elif task_type == "next_steps":
-        return "draft_next_steps"
-    else:
-        return "finalize"
+async def _run_agent_node(state: AgentState, agent) -> AgentState:
+    updates = await agent.run(state)
+    return {**state, **updates}
+
+def _route_after_extract(state: AgentState) -> str:
+    if state["task_type"] == "evidence_extraction":
+        return "finalizer"
+    return "drafter"
 
 def build_graph(llm, keyword_retriever, vector_store=None):
+    router_agent = RouterAgent(llm = llm)
+    retriever_agent = RetrieverAgent(
+        keyword_retriever = keyword_retriever,
+        vector_store = vector_store
+    )
+    extractor_agent = ExtractorAgent(llm=llm)
+    drafting_agent = DraftingAgent(llm=llm)
+    critic_agent = CriticAgent(llm=llm)
+    finalizer_agent = FinalizeAgent(llm=llm)
+    
     graph = StateGraph(AgentState)
 
-    graph.add_node("intake", partial(intake, llm=llm))
-    graph.add_node("retrieve", 
-    partial(retrieve, keyword_retriever=keyword_retriever, vector_store=vector_store))
-    graph.add_node("extract", partial(extract, llm=llm))
+    graph.add_node("router", partial(_run_agent_node, agent=router_agent))
+    graph.add_node("retriever", partial(_run_agent_node, agent=retriever_agent))
+    graph.add_node("extractor", partial(_run_agent_node, agent=extractor_agent))
+    graph.add_node("drafter", partial(_run_agent_node, agent=drafting_agent))
+    graph.add_node("critic", partial(_run_agent_node, agent=critic_agent))
+    graph.add_node("finalizer", partial(_run_agent_node, agent=finalizer_agent))
+    
 
-    graph.add_node("draft_summary", partial(draft_summary, llm =llm))
-    graph.add_node("draft_timeline", partial(draft_timeline, llm=llm))
-    graph.add_node("draft_risk_review", partial(draft_risk_review, llm=llm))
-    graph.add_node("draft_next_steps", partial(draft_next_steps, llm=llm))
+    graph.set_entry_point("router")
+    graph.add_edge("router", "retriever")
+    graph.add_edge("retriever", "extractor")
 
-    graph.add_node("critique", partial(critique, llm=llm))
-    graph.add_node("finalize", partial(finalize, llm=llm))
+    graph.add_conditional_edges(
+        "extractor",
+        _route_after_extract,
+        {
+            "drafter": "drafter",
+            "finalizer": "finalizer"
+        }
+    )
 
-    graph.set_entry_point("intake")
-    graph.add_edge("intake", "retrieve")
-    graph.add_edge("retrieve", "extract")
-
-
-    graph.add_conditional_edges("extract",
-     _route_after_extract,
-     {
-        "draft_summary": "draft_summary",
-        "draft_timeline": "draft_timeline",
-        "draft_risk_review": "draft_risk_review",
-        "draft_next_steps": "draft_next_steps",
-        "finalize": "finalize"
-     },
-     )
-
-    graph.add_edge("draft_summary", "critique")
-    graph.add_edge("draft_timeline", "critique")
-    graph.add_edge("draft_risk_review", "critique")
-    graph.add_edge("draft_next_steps", "critique")
-    graph.add_edge("critique", "finalize")
-    graph.add_edge("finalize", END)
+    graph.add_edge("drafter", "critic")
+    graph.add_edge("critic", "finalizer")
+    graph.add_edge("finalizer", END)
+    
     return graph.compile()
+    
+    
