@@ -10,7 +10,9 @@ TaskType = Literal[
     "evidence_extraction"
 ]
 
-class AgentState(TypedDict):
+class AgentState(TypedDict, total=False):
+    review_run_id: str
+
     question: str
     task_type: TaskType
     routing_reason: str
@@ -21,6 +23,7 @@ class AgentState(TypedDict):
     
     retrieved_documents: list[InputDocument]
     source_ids: list[str]
+    external_context: list[dict[str, Any]]
 
     extracted_facs: list[dict[str, Any]]
     draft_answer: str
@@ -30,4 +33,3 @@ class AgentState(TypedDict):
 
     retry_count: int
     error: Optional[str]
-    external_context: list[dict[str, Any]]

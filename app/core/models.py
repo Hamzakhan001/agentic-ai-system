@@ -1,11 +1,23 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
 
 TaskType = Literal["summary", "timeline", "risk_review", "next_steps", "evidence_extraction"]
+
+ReviewStatus = Literal[
+    "pending",
+    "running",
+    "completed",
+    "approved",
+    "revision_requested",
+    "failed"
+]
+
+
 
 
 class InputDocument(BaseModel):
@@ -65,3 +77,39 @@ class ReviewResponse(BaseModel):
     critique: CritiqueResult
     final_answer: str
     sources: list[SourceSnippet]
+
+
+class ReviewSummary(BaseModel):
+    id: str
+    parent_run_id: Optional[str] = None
+    question: str
+    task_type: Optional[str] = None
+    status: ReviewStatus
+    created_at: datetime
+    updated_at: datetime
+
+
+class ReviewRunDetail(BaseModel):
+    id: str
+    parent_run_id: Optional[str] = None
+    question: str
+    task_type: Optional[str] = None
+    status: ReviewStatus
+    top_k: int
+    review_note: Optional[str] = None
+    error_message: Optional[str] =None
+    extracted_facts: list[dict[str, Any]] = Field(default_factory=list)
+    draft_answer: str = ""
+    critique: dict[str, Any] = Field(default_factor = dict)
+    final_answer: str = ""
+    sources: list[dict[str, Any]] = Field(default_factory=list)
+    external_context: list[dict[str, Any]] = Field(default_factory=list)
+
+class ApproveRunRequest(BaseModel):
+    reviewer_name: str = "reviewer"
+    reviewer_note: Optional[str] = None
+
+class ReviseRunRequest(BaseModel):
+    instructions: str = Field(min_length=3)
+    reviewer_name: str = "reviewer"
+    rerun: bool = True

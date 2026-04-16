@@ -35,6 +35,7 @@ class Settings(BaseSettings):
 
     tavily_api_key: str = ""
     companies_house_api_key: str = ""
+    database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/agentic_legal"
 
 
 
