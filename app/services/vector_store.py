@@ -64,7 +64,7 @@ class VectorStoreService:
                 "id":ids[i],
                 "values": embeddings[i],
                 "metadata": {
-                    "document_id": chunks["document_id"],
+                    "document_id": chunk["document_id"],
                     "title": chunk["title"],
                     "chunk_index": chunk["chunk_index"],
                     "text": chunk["text"],
@@ -104,7 +104,6 @@ class VectorStoreService:
                 InputDocument(
                     id=metadata.get("document_id", ""),
                     title=metadata.get("title", ""),
-                    chunk_index=metadata.get("chunk_index", 0),
                     text=metadata.get("text", ""),
                     metadata=metadata
                 )

@@ -39,7 +39,7 @@ class IngestionService:
         )
 
         await self.vector_store.upsert_chunks(chunks)
-        return IngestionResponse(document_id=document_id, title=title, chunks = len(chunks))
+        return IngestResponse(document_id=document_id, title=title, chunks = len(chunks))
     
     async def ingest_file(
         self,
@@ -66,10 +66,10 @@ class IngestionService:
         )
 
         await self.vector_store.upsert_chunks(chunks)
-        return IngestionResponse(document_id=document_id, title=filename, chunks=len(chunks))
+        return IngestResponse(document_id=document_id, title=filename, chunks=len(chunks))
 
 
-    def _extract_pdf_text(self, file_bytes: bytes) -> str:
+    def _extract_text_from_pdf(self, file_bytes: bytes) -> str:
         pdf = PdfReader(io.BytesIO(file_bytes))
         pages = []
         for page in pdf.pages:

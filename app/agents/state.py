@@ -22,7 +22,3 @@ class AgentState(TypedDict, total = False):
 
 
 
-
-class AgentState(TypedDict, total= False):
-    question: str
-    task_type: Literal["summary", "time"]

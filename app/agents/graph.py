@@ -1,8 +1,8 @@
-form __future__ import annotations
+from __future__ import annotations
 
 from functools import partial
 
-from langgraph.gragph import END, StateGraph
+from langgraph.graph import END, StateGraph
 
 from app.agents.nodes.critique import critique
 from app.agents.nodes.draft import (
@@ -45,7 +45,7 @@ def build_graph(llm, keyword_retriever, vector_store=None):
     graph.add_node("draft_risk_review", partial(draft_risk_review, llm=llm))
     graph.add_node("draft_next_steps", partial(draft_next_steps, llm=llm))
 
-    graph.add_node("critque", partial(critique, llm=llm))
+    graph.add_node("critique", partial(critique, llm=llm))
     graph.add_node("finalize", partial(finalize, llm=llm))
 
     graph.set_entry_point("intake")
@@ -64,10 +64,10 @@ def build_graph(llm, keyword_retriever, vector_store=None):
      },
      )
 
-     graph.add_edge("draft_summary", "critique")
-     graph.add_edge("draft_timeline", "critique")
-     graph.add_edge("draft_risk_review", "critique")
-     graph.add_edge("draft_next_steps", "critique")
-     graph.add_edge("critique", "finalize")
-     graph.add_edge("finalize", END)
-     return graph.compile()
+    graph.add_edge("draft_summary", "critique")
+    graph.add_edge("draft_timeline", "critique")
+    graph.add_edge("draft_risk_review", "critique")
+    graph.add_edge("draft_next_steps", "critique")
+    graph.add_edge("critique", "finalize")
+    graph.add_edge("finalize", END)
+    return graph.compile()

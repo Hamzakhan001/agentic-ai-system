@@ -16,14 +16,14 @@ def _format_extracted_facts(state: AgentState) -> str:
     lines = []
     for fact in facts:
         lines.append(
-            f"-{fact['type']}: fact['value']"
-            f"(source: {fact['source_document_id']}, confidence: {fact['confidence']})"
+            f"-{fact['type']}: {fact['value']}"
+            f" (source: {fact['source_document_id']}, confidence: {fact['confidence']})"
         )
 
     return "\n".join(lines)
 
 
-async def finalize(state: AgentState) -> AgentState:
+async def finalize(state: AgentState, llm) -> AgentState:
 
     docs = state.get("retrieved_documents", [])
     critique = state.get("critique", {})
@@ -61,7 +61,7 @@ async def finalize(state: AgentState) -> AgentState:
                 "critique": critique,
                 "facts": state.get("extracted_facts", []),
                 "sources": sources
-            }
+            },
             ensure_ascii = False
         )
     )
