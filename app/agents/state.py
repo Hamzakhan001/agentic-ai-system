@@ -30,6 +30,7 @@ class AgentState(TypedDict, total=False):
     critique: dict[str, Any]
     final_answer: str
     sources: list[dict[str, str]]
+    memory_context: list[dict[str, Any]]
 
     retry_count: int
     error: Optional[str]
