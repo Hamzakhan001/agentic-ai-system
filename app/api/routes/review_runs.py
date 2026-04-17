@@ -4,9 +4,16 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
 from app.agents.graph import build_graph
-from app.core.models import ApproveRunRequest, ReviewRequest, ReviewRunDetail, ReviewRunSummary, ReviseRunRequest
+from app.core.models import (
+    ApproveRunRequest,
+    ReviewRequest,
+    ReviewRunDetail,
+    ReviewRunSummary,
+    ReviseRunRequest,
+)
 from app.db.session import get_session
 from app.services.llm import LLMService
+from app.services.memory_service import MemoryService
 from app.services.retrieval import SimpleRetrievalService
 from app.services.review_runs import ReviewRunService
 from app.services.vector_store import VectorStoreService
@@ -63,16 +70,52 @@ def get_review_run(run_id: str, session: Session = Depends(get_session)):
 @router.post("/{run_id}/approve", response_model=ReviewRunDetail)
 def approve_review_run(run_id: str, body: ApproveRunRequest, session: Session = Depends(get_session)):
     service = ReviewRunService(session)
+    memory_service = MemoryService(session)
+
     run = service.get_run(run_id)
-    run = service.approve_run(run, reviewer_name=body.reviewer_name, reviewer_note=body.reviewer_note)
+    run = service.approve_run(
+        run,
+        reviewer_name=body.reviewer_name,
+        reviewer_note=body.reviewer_note,
+    )
+
+    case_id = run.parent_run_id or run.id
+
+    memory_service.maybe_save_durable_notes_from_review(
+        scope_type="case",
+        scope_id=case_id,
+        reviewer_note=body.reviewer_note,
+        final_answer=run.final_answer,
+        source_run_id=run.id,
+        created_by=body.reviewer_name,
+    )
+
     return _to_detail(run)
 
 
 @router.post("/{run_id}/revise", response_model=ReviewRunDetail)
 async def revise_review_run(run_id: str, body: ReviseRunRequest, session: Session = Depends(get_session)):
     service = ReviewRunService(session)
+    memory_service = MemoryService(session)
+
     original_run = service.get_run(run_id)
-    service.request_revision(original_run, reviewer_name=body.reviewer_name, reviewer_note=body.instruction)
+    service.request_revision(
+        original_run,
+        reviewer_name=body.reviewer_name,
+        reviewer_note=body.instruction,
+    )
+
+    case_id = original_run.parent_run_id or original_run.id
+
+    memory_service.save_memory_note(
+        scope_type="case",
+        scope_id=case_id,
+        note_type="instruction",
+        content=body.instruction,
+        importance=5,
+        source_run_id=original_run.id,
+        created_by=body.reviewer_name,
+    )
 
     if not body.rerun:
         return _to_detail(original_run)
@@ -111,12 +154,14 @@ async def revise_review_run(run_id: str, body: ReviseRunRequest, session: Sessio
         graph = build_graph(
             llm=llm,
             keyword_retriever=keyword_retriever,
+            memory_service=memory_service,
             vector_store=vector_store,
         )
 
         result = await graph.ainvoke(
             {
                 "review_run_id": child_run.id,
+                "case_id": case_id,
                 "question": rerun_request.question,
                 "task_type": rerun_request.task_type,
                 "documents": rerun_request.documents,

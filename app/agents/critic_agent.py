@@ -42,10 +42,10 @@ class CriticAgent(BaseAgent):
                     "facts": state.get("extracted_facts",[]),
                     "external_context": state.get("external_context", []),
                 },
-                ensure_ascii = False
+                ensure_ascii=False
             )
-
-            return {
-                "critique": critique_result
-            }
         )
+
+        return {
+            "critique": critique_result
+        }

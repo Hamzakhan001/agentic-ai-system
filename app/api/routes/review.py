@@ -10,6 +10,7 @@ from app.services.llm import LLMService
 from app.services.retrieval import SimpleRetrievalService
 from app.services.review_runs import ReviewRunService
 from app.services.vector_store import VectorStoreService
+from app.services.memory_service import MemoryService
 
 router = APIRouter(prefix="/review", tags=["review"])
 
@@ -24,16 +25,19 @@ async def review_documents(body: ReviewRequest, session: Session = Depends(get_s
         llm = LLMService()
         keyword_retriever = SimpleRetrievalService()
         vector_store = VectorStoreService() if body.document_ids else None
+        memory_service = MemoryService(session)
 
         graph = build_graph(
             llm=llm,
             keyword_retriever=keyword_retriever,
+            memory_service=memory_service,
             vector_store=vector_store,
         )
 
         result = await graph.ainvoke(
             {
                 "review_run_id": run.id,
+                "case_id": run.id,
                 "question": body.question,
                 "task_type": body.task_type,
                 "documents": body.documents,

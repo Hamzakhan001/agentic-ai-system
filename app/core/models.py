@@ -6,7 +6,13 @@ from typing import Any, Literal, Optional
 from pydantic import BaseModel, Field, model_validator
 
 
-TaskType = Literal["summary", "timeline", "risk_review", "next_steps", "evidence_extraction"]
+TaskType = Literal[
+    "summary",
+    "timeline",
+    "risk_review",
+    "next_steps",
+    "evidence_extraction",
+]
 
 ReviewStatus = Literal[
     "pending",
@@ -14,10 +20,8 @@ ReviewStatus = Literal[
     "completed",
     "approved",
     "revision_requested",
-    "failed"
+    "failed",
 ]
-
-
 
 
 class InputDocument(BaseModel):
@@ -36,10 +40,11 @@ class IngestTextRequest(BaseModel):
 class IngestResponse(BaseModel):
     document_id: str
     title: str
-    chunks: int 
+    chunks: int
+
 
 class ReviewRequest(BaseModel):
-    question: str = Field(min_length=1)
+    question: str = Field(min_length=3)
     task_type: Optional[TaskType] = None
     documents: list[InputDocument] = Field(default_factory=list)
     document_ids: list[str] = Field(default_factory=list)
@@ -70,6 +75,7 @@ class SourceSnippet(BaseModel):
     title: str
     snippet: str
 
+
 class ReviewResponse(BaseModel):
     task_type: TaskType
     extracted_facts: list[ExtractedFact]
@@ -79,7 +85,7 @@ class ReviewResponse(BaseModel):
     sources: list[SourceSnippet]
 
 
-class ReviewSummary(BaseModel):
+class ReviewRunSummary(BaseModel):
     id: str
     parent_run_id: Optional[str] = None
     question: str
@@ -96,20 +102,26 @@ class ReviewRunDetail(BaseModel):
     task_type: Optional[str] = None
     status: ReviewStatus
     top_k: int
-    review_note: Optional[str] = None
-    error_message: Optional[str] =None
+    reviewer_note: Optional[str] = None
+    error_message: Optional[str] = None
+
     extracted_facts: list[dict[str, Any]] = Field(default_factory=list)
     draft_answer: str = ""
-    critique: dict[str, Any] = Field(default_factory = dict)
+    critique: dict[str, Any] = Field(default_factory=dict)
     final_answer: str = ""
     sources: list[dict[str, Any]] = Field(default_factory=list)
     external_context: list[dict[str, Any]] = Field(default_factory=list)
+
+    created_at: datetime
+    updated_at: datetime
+
 
 class ApproveRunRequest(BaseModel):
     reviewer_name: str = "reviewer"
     reviewer_note: Optional[str] = None
 
+
 class ReviseRunRequest(BaseModel):
-    instructions: str = Field(min_length=3)
+    instruction: str = Field(min_length=3)
     reviewer_name: str = "reviewer"
     rerun: bool = True

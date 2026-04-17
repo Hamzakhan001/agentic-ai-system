@@ -15,7 +15,7 @@ class MemoryNote(SQLModel, table=True):
     note_type: str = Field(index=True)
     content: str
     importance: int = Field(default=3, index=True)
-    srouce_run_id: str | None = Field(default=None, index=True)
+    source_run_id: str | None = Field(default=None, index=True)
     created_by: str | None = None
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)
