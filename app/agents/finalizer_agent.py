@@ -62,6 +62,7 @@ class FinalizeAgent(BaseAgent):
                     "facts": state.get("extracted_facts", []),
                     "sources": sources,
                     "external_context": state.get("external_context", []),
+                    "memory_context": state.get("memory_context", []),
                 },
                 ensure_ascii= False
             )

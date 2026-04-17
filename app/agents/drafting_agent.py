@@ -53,7 +53,9 @@ class DraftingAgent(BaseAgent):
                     "question": state["question"],
                     "task_type": state["task_type"],
                     "facts": state.get("extracted_facts",[]),
-                    "documents": evidence
+                    "documents": evidence,
+                    "external_context": state.get("external_context", []),
+                    "memory_context": state.get("memory_context", []),
                 },
                 ensure_ascii=False
             )
