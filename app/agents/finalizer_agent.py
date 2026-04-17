@@ -42,7 +42,7 @@ class FinalizeAgent(BaseAgent):
         if state["task_type"] == "evidence_extraction":
             return {
                 "final_answer": self._format_extracted_facts(state),
-                "source": sources,
+                "sources": sources,
             }
 
         if critique.get("verdict") == "pass":

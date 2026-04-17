@@ -25,11 +25,11 @@ class AgentState(TypedDict, total=False):
     source_ids: list[str]
     external_context: list[dict[str, Any]]
 
-    extracted_facs: list[dict[str, Any]]
+    extracted_facts: list[dict[str, Any]]
     draft_answer: str
     critique: dict[str, Any]
     final_answer: str
-    sources: list[dict[str str]]
+    sources: list[dict[str, str]]
 
     retry_count: int
     error: Optional[str]

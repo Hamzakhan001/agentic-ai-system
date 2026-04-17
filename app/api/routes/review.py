@@ -1,18 +1,25 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import Session
 
 from app.agents.graph import build_graph
 from app.core.models import CritiqueResult, ExtractedFact, ReviewRequest, ReviewResponse, SourceSnippet
+from app.db.session import get_session
 from app.services.llm import LLMService
 from app.services.retrieval import SimpleRetrievalService
+from app.services.review_runs import ReviewRunService
 from app.services.vector_store import VectorStoreService
 
 router = APIRouter(prefix="/review", tags=["review"])
 
 
 @router.post("", response_model=ReviewResponse)
-async def review_documents(body: ReviewRequest) -> ReviewResponse:
+async def review_documents(body: ReviewRequest, session: Session = Depends(get_session)) -> ReviewResponse:
+    run_service = ReviewRunService(session)
+    run = run_service.create_run(body)
+    run_service.mark_running(run)
+
     try:
         llm = LLMService()
         keyword_retriever = SimpleRetrievalService()
@@ -26,6 +33,7 @@ async def review_documents(body: ReviewRequest) -> ReviewResponse:
 
         result = await graph.ainvoke(
             {
+                "review_run_id": run.id,
                 "question": body.question,
                 "task_type": body.task_type,
                 "documents": body.documents,
@@ -33,6 +41,8 @@ async def review_documents(body: ReviewRequest) -> ReviewResponse:
                 "top_k": body.top_k,
             }
         )
+
+        run_service.complete_run(run, result)
 
         return ReviewResponse(
             task_type=result["task_type"],
@@ -48,4 +58,5 @@ async def review_documents(body: ReviewRequest) -> ReviewResponse:
             sources=[SourceSnippet(**source) for source in result.get("sources", [])],
         )
     except Exception as exc:
+        run_service.fail_run(run, str(exc))
         raise HTTPException(status_code=500, detail=str(exc))

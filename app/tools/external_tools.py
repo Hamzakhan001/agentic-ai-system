@@ -97,7 +97,7 @@ class GovUkGuidanceSearchTool:
 
         async with httpx.AsyncClient(timeout=20.0) as client:
             response = await client.post("https://api.tavily.com/search", json=payload)
-            reponse.raise_for_status()
+            response.raise_for_status()
             data = response.json()
 
         return [

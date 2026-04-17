@@ -15,7 +15,7 @@ class RetrieverAgent(BaseAgent):
         if state.get("documents"):
             docs = self.keyword_retriever.search(
                 question = state["question"],
-                documents = state["documnets"],
+                documents = state["documents"],
                 top_k= state.get("top_k", 4)
             )
 
@@ -33,7 +33,7 @@ class RetrieverAgent(BaseAgent):
             docs = await self.vector_store.similarity_search(
                 query=state["question"],
                 top_k = state.get("top_k",4),
-                document_ids = state["documents_ids"]
+                document_ids = state["document_ids"]
             )
 
             return {

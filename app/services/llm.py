@@ -44,7 +44,7 @@ class LLMService:
             cleaned = cleaned[:-3].strip()
 
         try:
-            retur json.loads(cleaned)
+            return json.loads(cleaned)
         except json.JSONDecodeError:
             start = cleaned.find("{")
             end = cleaned.rfind("}")

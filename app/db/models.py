@@ -28,7 +28,7 @@ class ReviewRun(SQLModel, table=True):
     draft_answer: str = ""
     final_answer: str = ""
 
-    reviewer_note: str | Note = None
+    reviewer_note: str | None = None
     reviewer_name: str | None = None
     error_message: str | None = None
 

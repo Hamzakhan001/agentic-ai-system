@@ -1,7 +1,7 @@
 from __future__ import annotations
 import json
 from app.agents.base import BaseAgent
-from app.agents.prompt import EXTRACTION_SYSTEM
+from app.agents.prompts import EXTRACTION_SYSTEM
 from app.agents.state import AgentState
 
 

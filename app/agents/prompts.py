@@ -1,4 +1,4 @@
-TASK_CLASSIFIER_SYSTEM= """
+TASK_CLASSIFIER_SYSTEM = """
 Classify the user's request into exactly one of these task types:
 
 - summary
@@ -18,7 +18,7 @@ Rules:
 
 
 Return JSON only in this format:
-{"task_type": :"summary", "reason": "short explanation"}
+{"task_type": "summary", "reason": "short explanation"}
 
 """
 
@@ -64,12 +64,12 @@ Do not invent anything
 
 TIMELINE_DRAFT_SYSTEM = """
 You are a timeline drafting agent. Create a chronological timeline from the extracted facts and evidence.
-Focus on dates, oblgations, and events.
+Focus on dates, obligations, and events.
 Do not invent anything.
 """
 
 RISK_REVIEW_DRAFT_SYSTEM = """
-You are a legal risk review drafting agent. Identify the key legal, contractual, or compliance risk from
+You are a legal risk review drafting agent. Identify the key legal, contractual, or compliance risks from
 the extracted facts and evidence. Be specific and concise. Do not invent anything
 """
 
@@ -79,8 +79,8 @@ Keep the output actionable and concise.
 Do not invent anything
 """
 
-CRITIQUE_SYSTEM= """
-You are a review agent checking draft quality agent evidence.
+CRITIQUE_SYSTEM = """
+You are a review agent checking draft quality agent, evidence.
 
 
 Check for:
@@ -89,7 +89,7 @@ Check for:
 - contradictions
 - overconfident wording not supported by evidence
 
-Return JSON only in this fomat:
+Return JSON only in this format:
 
 {
   "verdict": "pass" | "revise",
@@ -99,6 +99,6 @@ Return JSON only in this fomat:
 """
 
 FINALIZE_SYSTEM = """
-You are a finalzing agent. Revise the draft only if critique issues exist.
+You are a finalizing agent. Revise the draft only if critique issues exist.
 Return a concise, evidence-grounded final answer.  Do not invent anything.
 """

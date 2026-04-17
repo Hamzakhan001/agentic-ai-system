@@ -100,7 +100,7 @@ class ReviewRunDetail(BaseModel):
     error_message: Optional[str] =None
     extracted_facts: list[dict[str, Any]] = Field(default_factory=list)
     draft_answer: str = ""
-    critique: dict[str, Any] = Field(default_factor = dict)
+    critique: dict[str, Any] = Field(default_factory = dict)
     final_answer: str = ""
     sources: list[dict[str, Any]] = Field(default_factory=list)
     external_context: list[dict[str, Any]] = Field(default_factory=list)

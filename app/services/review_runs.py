@@ -16,7 +16,7 @@ class ReviewRunService:
     def __init__(self, session: Session):
         self.session = session
 
-    def create_run(self, body: ReviewRequest, *, parent_run_id: str | None = None, reviewer_note: str | None, reviewer_name: str | None = None) -> ReviewerRun:
+    def create_run(self, body: ReviewRequest, *, parent_run_id: str | None = None, reviewer_note: str | None, reviewer_name: str | None = None) -> ReviewRun:
         run = ReviewRun(
             parent_run_id = parent_run_id,
             question = body.question,
@@ -40,15 +40,7 @@ class ReviewRunService:
         self.session.refresh(run)
         return run
 
-    def mark_running(self, run:ReviewRun) -> ReviewRun:
-        run.status = "running"
-        run.updated_at = utcnow()
-        self.session.add(run)
-        self.session.commit()
-        self.session.refresh(run)
-        return run
-
-    def complete_run(self, run:ReviewRun, result:dict) -> ReviewerRun:
+    def complete_run(self, run:ReviewRun, result:dict) -> ReviewRun:
         run.task_type = result.get("task_type", run.task_type)
         run.status = "completed"
         run.extracted_facts = result.get("extracted_facts", [])
@@ -67,6 +59,15 @@ class ReviewRunService:
         run.status = "approved"
         run.reviewer_name = reviewer_name
         run.reviewer_note = reviewer_note
+        run.updated_at = utcnow()
+        self.session.add(run)
+        self.session.commit()
+        self.session.refresh(run)
+        return run
+
+    def fail_run(self, run: ReviewRun, error_message: str) -> ReviewRun:
+        run.status = "failed"
+        run.error_message = error_message
         run.updated_at = utcnow()
         self.session.add(run)
         self.session.commit()
