@@ -3,6 +3,7 @@ from __future__ import annotations
 from functools import partial
 
 from langgraph.graph import END, StateGraph
+from opentelemetry.trace import Status, StatusCode
 
 from app.agents.critic_agent import CriticAgent
 from app.agents.drafting_agent import DraftingAgent
@@ -13,11 +14,26 @@ from app.agents.research_agent import ResearchAgent
 from app.agents.retriever_agent import RetrieverAgent
 from app.agents.router_agent import RouterAgent
 from app.agents.state import AgentState
+from app.core.observability import get_tracer
+
+
+tracer = get_tracer("agentic-legal-review.graph")
 
 
 async def _run_agent_node(state: AgentState, agent) -> AgentState:
-    updates = await agent.run(state)
-    return {**state, **updates}
+    with tracer.start_as_current_span(f"agent.{agent.name}") as span:
+        span.set_attribute("agent.name", agent.name)
+        span.set_attribute("review.run_id", state.get("review_run_id", ""))
+        span.set_attribute("review.case_id", state.get("case_id", ""))
+        span.set_attribute("review.task_type", state.get("task_type", "") or "")
+        try:
+            updates = await agent.run(state)
+            span.set_attribute("agent.updated_keys", ",".join(sorted(updates.keys())))
+            return {**state, **updates}
+        except Exception as exc:
+            span.record_exception(exc)
+            span.set_status(Status(StatusCode.ERROR, str(exc)))
+            raise
 
 
 def _route_after_extract(state: AgentState) -> str:

@@ -17,7 +17,14 @@ class ReviewRunService:
     def __init__(self, session: Session):
         self.session = session
 
-    def create_run(self, body: ReviewRequest, *, parent_run_id: str | None = None, reviewer_note: str | None, reviewer_name: str | None = None) -> ReviewRun:
+    def create_run(
+        self,
+        body: ReviewRequest,
+        *,
+        parent_run_id: str | None = None,
+        reviewer_note: str | None = None,
+        reviewer_name: str | None = None,
+    ) -> ReviewRun:
         run = ReviewRun(
             parent_run_id = parent_run_id,
             question = body.question,

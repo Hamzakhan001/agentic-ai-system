@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     pinecone_api_key: str = Field(default="", alias="PINECONE_API_KEY")
     pinecone_index_name: str = "agentic-legal"
-    pinecone_region: str = "us-east-1"
+    pinecone_region: str = Field(default="us-east-1", alias="PINECONE_ENVIRONMENT")
 
     app_env: str = "development"
     log_level: str = "INFO"
@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     tavily_api_key: str = ""
     companies_house_api_key: str = ""
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/agentic_legal"
+    phoenix_enabled: bool = Field(default=False, alias="PHOENIX_ENABLED")
+    phoenix_collector_endpoint: str = Field(default="http://127.0.0.1:6006", alias="PHOENIX_COLLECTOR_ENDPOINT")
+    phoenix_project_name: str = Field(default="agentic-legal-review", alias="PHOENIX_PROJECT_NAME")
+    phoenix_api_key: str = Field(default="", alias="PHOENIX_API_KEY")
 
 
 

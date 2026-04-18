@@ -14,17 +14,19 @@ class VectorStoreService:
     def __init__(self) -> None:
         self.settings = get_settings()
         if not self.settings.pinecone_api_key:
-            raise RuntimeError("Pine cone api key not configure")
+            raise RuntimeError("Pinecone API key is not configured")
+        if not self.settings.openai_api_key:
+            raise RuntimeError("OpenAI API key is not configured")
 
         self.pc = Pinecone(api_key=self.settings.pinecone_api_key)
-        self.async_openai = AsyncOpenAI(api_key=self.settings.pinecone_api_key)
+        self.async_openai = AsyncOpenAI(api_key=self.settings.openai_api_key)
         self._ensure_index()
 
     def _ensure_index(self) -> None:
         existing_names = [idx.name for idx in self.pc.list_indexes()]
 
         if self.settings.pinecone_index_name not in existing_names:
-            logger.info()
+            logger.info("creating_pinecone_index", index_name=self.settings.pinecone_index_name)
 
             self.pc.create_index(
                 name = self.settings.pinecone_index_name,
@@ -110,7 +112,6 @@ class VectorStoreService:
             )
         
         return docs
-
 
 
 

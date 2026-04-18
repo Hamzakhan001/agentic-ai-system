@@ -6,6 +6,7 @@ from app.agents.state import AgentState
 
 
 class CriticAgent(BaseAgent):
+    name = "critic_agent"
 
     def __init__(self, llm) -> None:
         self.llm = llm
