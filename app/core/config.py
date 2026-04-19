@@ -41,6 +41,13 @@ class Settings(BaseSettings):
     phoenix_project_name: str = Field(default="agentic-legal-review", alias="PHOENIX_PROJECT_NAME")
     phoenix_api_key: str = Field(default="", alias="PHOENIX_API_KEY")
 
+    llm_provider: str = Field(default="openai", alias="LLM_PROVIDER")
+    ollama_base_url: str = Field(default="http://127.0.0.1:11434", alias="OLLAMA_BASE_URL")
+    ollama_model: str = Field(default="phi3:mini", alias="OLLAMA_MODEL")
+
+    eval_llm_provider: str = Field(default="ollama", alias="EVAL_LLM_PROVIDER")
+    eval_model: str = Field(default="phi3:mini", alias="EVAL_MODEL")
+
 
 
 @lru_cache()

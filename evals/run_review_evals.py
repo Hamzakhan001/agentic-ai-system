@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import argparse
 import json
+import random
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -8,16 +10,16 @@ from typing import Any
 import httpx
 
 
-DATASET_PATH = Path(__file__).with_name("review_dataset_500.json")
+DEFAULT_DATASET = "review_dataset.json"
+DEFAULT_OUTPUT = "review_eval_report.json"
 API_URL = "http://127.0.0.1:8000/api/v1/review"
-REPORT_PATH = Path(__file__).with_name("review_eval_report.json")
 
 
 @dataclass
 class EvalResult:
     case_id: str
     passed: bool
-    task_type_expected: str
+    task_type_expected: strπ
     task_type_actual: str
     task_type_match: bool
     expected_phrase_coverage: float
@@ -27,8 +29,21 @@ class EvalResult:
     notes: list[str]
 
 
-def load_dataset() -> list[dict[str, Any]]:
-    return json.loads(DATASET_PATH.read_text())
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", default=DEFAULT_DATASET)
+    parser.add_argument("--output", default=DEFAULT_OUTPUT)
+    parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--offset", type=int, default=0)
+    parser.add_argument("--task-type", default=None)
+    parser.add_argument("--sample", action="store_true")
+    parser.add_argument("--timeout", type=float, default=300.0)
+    return parser.parse_args()
+
+
+def load_dataset(dataset_name: str) -> list[dict[str, Any]]:
+    path = Path(__file__).with_name(dataset_name)
+    return json.loads(path.read_text())
 
 
 def normalize(text: str) -> str:
@@ -98,12 +113,40 @@ def score_case(case: dict[str, Any], response: dict[str, Any]) -> EvalResult:
     )
 
 
+def filter_cases(cases: list[dict[str, Any]], args: argparse.Namespace) -> list[dict[str, Any]]:
+    filtered = cases
+
+    if args.task_type:
+        filtered = [case for case in filtered if case["task_type"] == args.task_type]
+
+    if args.sample and args.limit is not None:
+        filtered = random.sample(filtered, min(args.limit, len(filtered)))
+        return filtered
+
+    if args.offset:
+        filtered = filtered[args.offset :]
+
+    if args.limit is not None:
+        filtered = filtered[: args.limit]
+
+    return filtered
+
+
 def main() -> None:
-    dataset = load_dataset()
+    args = parse_args()
+    dataset = load_dataset(args.dataset)
+    dataset = filter_cases(dataset, args)
+
+    if not dataset:
+        print("No cases selected.")
+        return
+
     results: list[dict[str, Any]] = []
 
-    with httpx.Client(timeout=90.0) as client:
-        for case in dataset:
+    with httpx.Client(timeout=args.timeout) as client:
+        for idx, case in enumerate(dataset, start=1):
+            print(f"[{idx}/{len(dataset)}] Running case: {case['id']}")
+
             payload = {
                 "question": case["question"],
                 "task_type": case["task_type"],
@@ -111,10 +154,24 @@ def main() -> None:
                 "top_k": case.get("top_k", 3),
             }
 
-            response = client.post(API_URL, json=payload)
-            response.raise_for_status()
-            review_output = response.json()
+            response = client.post(
+                API_URL,
+                json=payload,
+                headers={"X-Eval-Mode": "true"},
+            )
 
+            if response.status_code >= 400:
+                results.append(
+                    {
+                        "case_id": case["id"],
+                        "passed": False,
+                        "error": f"HTTP {response.status_code}",
+                        "error_body": response.text,
+                    }
+                )
+                continue
+
+            review_output = response.json()
             eval_result = score_case(case, review_output)
             results.append(
                 {
@@ -133,15 +190,21 @@ def main() -> None:
             )
 
     total = len(results)
-    passed = sum(1 for item in results if item["passed"])
+    passed = sum(1 for item in results if item.get("passed", False))
+    http_errors = sum(1 for item in results if "error" in item)
+    scored_cases = sum(1 for item in results if "task_type_match" in item)
 
     summary = {
-        "total_cases": total,
+        "dataset": args.dataset,
+        "offset": args.offset,
+        "cases_run": total,
         "passed_cases": passed,
+        "http_error_cases": http_errors,
+        "scored_cases": scored_cases,
         "pass_rate": passed / total if total else 0.0,
-        "task_type_accuracy": sum(1 for item in results if item["task_type_match"]) / total if total else 0.0,
-        "avg_phrase_coverage": sum(item["expected_phrase_coverage"] for item in results) / total if total else 0.0,
-        "avg_fact_type_coverage": sum(item["expected_fact_type_coverage"] for item in results) / total if total else 0.0,
+        "task_type_accuracy": sum(1 for item in results if item.get("task_type_match", False)) / total if total else 0.0,
+        "avg_phrase_coverage": sum(item.get("expected_phrase_coverage", 0.0) for item in results) / total if total else 0.0,
+        "avg_fact_type_coverage": sum(item.get("expected_fact_type_coverage", 0.0) for item in results) / total if total else 0.0,
     }
 
     report = {
@@ -149,9 +212,12 @@ def main() -> None:
         "results": results,
     }
 
-    REPORT_PATH.write_text(json.dumps(report, indent=2))
+    output_path = Path(__file__).with_name(args.output)
+    output_path.write_text(json.dumps(report, indent=2))
+
+    print("\nSummary:")
     print(json.dumps(summary, indent=2))
-    print(f"\nSaved report to: {REPORT_PATH}")
+    print(f"\nSaved report to: {output_path}")
 
 
 if __name__ == "__main__":
