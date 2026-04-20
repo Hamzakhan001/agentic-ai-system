@@ -154,11 +154,32 @@ def main() -> None:
                 "top_k": case.get("top_k", 3),
             }
 
-            response = client.post(
-                API_URL,
-                json=payload,
-                headers={"X-Eval-Mode": "true"},
-            )
+            try:
+                response = client.post(
+                    API_URL,
+                    json=payload,
+                    headers={"X-Eval-Mode": "true"},
+                )
+            except httpx.TimeoutException as exc:
+                results.append(
+                    {
+                        "case_id": case["id"],
+                        "passed": False,
+                        "error": "timeout",
+                        "error_body": str(exc),
+                    }
+                )
+                continue
+            except httpx.HTTPError as exc:
+                results.append(
+                    {
+                        "case_id": case["id"],
+                        "passed": False,
+                        "error": "request_error",
+                        "error_body": str(exc),
+                    }
+                )
+                continue
 
             if response.status_code >= 400:
                 results.append(
@@ -170,6 +191,8 @@ def main() -> None:
                     }
                 )
                 continue
+
+
 
             review_output = response.json()
             eval_result = score_case(case, review_output)
