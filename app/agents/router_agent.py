@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from app.agents.base import BaseAgent
-from app.agents.prompts import TASK_CLASSIFIER_SYSTEM
+from app.agents.prompts import get_task_classifier_system
 from app.agents.state import AgentState
 
 
@@ -19,7 +19,7 @@ class RouterAgent(BaseAgent):
             }
 
         payload = await self.llm.json_response(
-            system=TASK_CLASSIFIER_SYSTEM,
+            system=get_task_classifier_system(),
             user=state["question"]
         )
         

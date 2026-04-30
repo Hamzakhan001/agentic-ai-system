@@ -3,10 +3,10 @@ import json
 
 from app.agents.base import BaseAgent
 from app.agents.prompts import (
-    NEXT_STEPS_DRAFT_SYSTEM,
-    RISK_REVIEW_DRAFT_SYSTEM,
-    SUMMARY_DRAFT_SYSTEM,
-    TIMELINE_DRAFT_SYSTEM
+    get_next_steps_draft_system,
+    get_risk_review_draft_system,
+    get_summary_draft_system,
+    get_timeline_draft_system,
 )
 
 from app.agents.state import AgentState
@@ -18,16 +18,17 @@ class DraftingAgent(BaseAgent):
         self.llm = llm
 
     def _select_prompt(self, task_type: str) -> str:
-        if task_type == "summary":
-            return SUMMARY_DRAFT_SYSTEM
-        if task_type == "timeline":
-            return TIMELINE_DRAFT_SYSTEM
-        if task_type == "risk_review":
-            return RISK_REVIEW_DRAFT_SYSTEM
-        if task_type == "next_steps":
-            return NEXT_STEPS_DRAFT_SYSTEM
-        
-        return SUMMARY_DRAFT_SYSTEM
+    if task_type == "summary":
+        return get_summary_draft_system()
+    if task_type == "timeline":
+        return get_timeline_draft_system()
+    if task_type == "risk_review":
+        return get_risk_review_draft_system()
+    if task_type == "next_steps":
+        return get_next_steps_draft_system()
+
+    return get_summary_draft_system()
+
 
 
     async def run(self, state: AgentState) -> dict:

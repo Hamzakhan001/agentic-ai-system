@@ -1,7 +1,7 @@
 from __future__ import annotations
 import json
 from app.agents.base import BaseAgent
-from app.agents.prompts import CRITIQUE_SYSTEM
+from app.agents.prompts import get_critique_system
 from app.agents.state import AgentState
 
 
@@ -33,7 +33,7 @@ class CriticAgent(BaseAgent):
         ]
 
         critique_result = await self.llm.json_response(
-            system = CRITIQUE_SYSTEM,
+            system = get_critique_system(),
             user = json.dumps(
                 {
                     "question": state["question"],

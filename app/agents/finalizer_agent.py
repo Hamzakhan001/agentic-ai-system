@@ -2,7 +2,7 @@ from __future__ import annotations
 import json
 
 from app.agents.base import BaseAgent
-from app.agents.prompts import FINALIZE_SYSTEM
+from app.agents.prompts import get_finalize_system
 from app.agents.state import AgentState
 
 class FinalizeAgent(BaseAgent):
@@ -52,7 +52,7 @@ class FinalizeAgent(BaseAgent):
             }
 
         final_answer = await self.llm.complete(
-            system = FINALIZE_SYSTEM,
+            system = get_finalize_system(),
             user = json.dumps(
                 {
                     "question": state["question"],

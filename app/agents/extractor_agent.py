@@ -1,7 +1,7 @@
 from __future__ import annotations
 import json
 from app.agents.base import BaseAgent
-from app.agents.prompts import EXTRACTION_SYSTEM
+from app.agents.prompts import get_extraction_system
 from app.agents.state import AgentState
 
 
@@ -24,7 +24,7 @@ class ExtractorAgent(BaseAgent):
         ]
 
         payload = await self.llm.json_response(
-            system = EXTRACTION_SYSTEM,
+            system = get_extraction_system(),
             user = json.dumps(
                 {
                     "question": state["question"],
