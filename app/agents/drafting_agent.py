@@ -18,16 +18,16 @@ class DraftingAgent(BaseAgent):
         self.llm = llm
 
     def _select_prompt(self, task_type: str) -> str:
-    if task_type == "summary":
-        return get_summary_draft_system()
-    if task_type == "timeline":
-        return get_timeline_draft_system()
-    if task_type == "risk_review":
-        return get_risk_review_draft_system()
-    if task_type == "next_steps":
-        return get_next_steps_draft_system()
+        if task_type == "summary":
+            return get_summary_draft_system()
+        if task_type == "timeline":
+            return get_timeline_draft_system()
+        if task_type == "risk_review":
+            return get_risk_review_draft_system()
+        if task_type == "next_steps":
+            return get_next_steps_draft_system()
 
-    return get_summary_draft_system()
+        return get_summary_draft_system()
 
 
 
