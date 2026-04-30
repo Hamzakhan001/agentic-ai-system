@@ -41,12 +41,9 @@ class CriticAgent(BaseAgent):
             span.set_attribute("prompt.version_id", prompt["version_id"] or "fallback")
             span.set_attribute("prompt.source", prompt["source"])
 
+        
         critique_result = await self.llm.json_response(
-            system=prompt["content"],
-            user=json.dumps(...),
-        )
-        critique_result = await self.llm.json_response(
-            system = get_critique_system(),
+            system = prompt["content"],
             user = json.dumps(
                 {
                     "question": state["question"],

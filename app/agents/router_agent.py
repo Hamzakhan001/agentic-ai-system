@@ -28,9 +28,10 @@ class RouterAgent(BaseAgent):
             span.set_attribute("prompt.source", prompt["source"])
 
         payload = await self.llm.json_response(
-            system=get_task_classifier_system(),
-            user=state["question"]
+            system=prompt["content"],
+            user=state["question"],
         )
+
         
         return {
             "task_type": payload["task_type"],

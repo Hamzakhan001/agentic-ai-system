@@ -34,10 +34,6 @@ class ExtractorAgent(BaseAgent):
 
         payload = await self.llm.json_response(
             system=prompt["content"],
-            user=json.dumps(...),
-        )
-        payload = await self.llm.json_response(
-            system = get_extraction_system(),
             user = json.dumps(
                 {
                     "question": state["question"],

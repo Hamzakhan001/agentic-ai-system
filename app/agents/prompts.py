@@ -1,7 +1,5 @@
 from __future__ import annotations
 from app.prompts import get_prompt
-from opentelemetry import trace
-
 
 
 TASK_CLASSIFIER_SYSTEM_FALLBACK = """
@@ -20,7 +18,10 @@ Rules:
 - If the user asks for legal, contractual, or compliance risks, choose risk_review.
 - If the user asks what to do next, choose next_steps.
 
+Return JSON only in this format:
+{"task_type": "summary", "reason": "short explanation"}
 """
+
 
 EXTRACTION_SYSTEM_FALLBACK = """
 You are an evidence extraction agent for legal and contract review.
@@ -146,29 +147,29 @@ def get_task_classifier_system() -> dict[str, str | None]:
     return get_prompt("task-classifier-system", TASK_CLASSIFIER_SYSTEM_FALLBACK)
 
 
-def get_extraction_system() -> str:
-    return get_prompt_text("evidence-extraction-system", EXTRACTION_SYSTEM_FALLBACK)
+def get_extraction_system() -> dict[str, str | None]:
+    return get_prompt("evidence-extraction-system", EXTRACTION_SYSTEM_FALLBACK)
 
 
-def get_summary_draft_system() -> str:
-    return get_prompt_text("summary-draft-system", SUMMARY_DRAFT_SYSTEM_FALLBACK)
+def get_summary_draft_system() -> dict[str, str | None]:
+    return get_prompt("summary-draft-system", SUMMARY_DRAFT_SYSTEM_FALLBACK)
 
 
-def get_timeline_draft_system() -> str:
-    return get_prompt_text("timeline-draft-system", TIMELINE_DRAFT_SYSTEM_FALLBACK)
+def get_timeline_draft_system() -> dict[str, str | None]:
+    return get_prompt("timeline-draft-system", TIMELINE_DRAFT_SYSTEM_FALLBACK)
 
 
-def get_risk_review_draft_system() -> str:
-    return get_prompt_text("risk-review-draft-system", RISK_REVIEW_DRAFT_SYSTEM_FALLBACK)
+def get_risk_review_draft_system() -> dict[str, str | None]:
+    return get_prompt("risk-review-draft-system", RISK_REVIEW_DRAFT_SYSTEM_FALLBACK)
 
 
-def get_next_steps_draft_system() -> str:
-    return get_prompt_text("next-steps-draft-system", NEXT_STEPS_DRAFT_SYSTEM_FALLBACK)
+def get_next_steps_draft_system() -> dict[str, str | None]:
+    return get_prompt("next-steps-draft-system", NEXT_STEPS_DRAFT_SYSTEM_FALLBACK)
 
 
-def get_critique_system() -> str:
-    return get_prompt_text("critique-system", CRITIQUE_SYSTEM_FALLBACK)
+def get_critique_system() -> dict[str, str | None]:
+    return get_prompt("critique-system", CRITIQUE_SYSTEM_FALLBACK)
 
 
-def get_finalize_system() -> str:
-    return get_prompt_text("finalize-system", FINALIZE_SYSTEM_FALLBACK)
+def get_finalize_system() -> dict[str, str | None]:
+    return get_prompt("finalize-system", FINALIZE_SYSTEM_FALLBACK)

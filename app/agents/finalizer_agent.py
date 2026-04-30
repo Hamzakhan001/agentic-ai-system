@@ -60,14 +60,9 @@ class FinalizeAgent(BaseAgent):
             span.set_attribute("prompt.version_id", prompt["version_id"] or "fallback")
             span.set_attribute("prompt.source", prompt["source"])
 
-        final_answer = await self.llm.complete(
-            system=prompt["content"],
-            user=json.dumps(...),
-        )
-
 
         final_answer = await self.llm.complete(
-            system = get_finalize_system(),
+            system = prompt["content"],
             user = json.dumps(
                 {
                     "question": state["question"],
