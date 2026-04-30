@@ -4,6 +4,8 @@ import json
 from app.agents.base import BaseAgent
 from app.agents.prompts import get_finalize_system
 from app.agents.state import AgentState
+from opentelemetry import trace
+
 
 class FinalizeAgent(BaseAgent):
     name = "finalizer_agent"
@@ -50,6 +52,19 @@ class FinalizeAgent(BaseAgent):
                 "final_answer": state.get("draft_answer", ""),
                 "sources": sources
             }
+        prompt = get_finalize_system()
+        span = trace.get_current_span()
+        if span is not None:
+            span.set_attribute("prompt.name", prompt["name"])
+            span.set_attribute("prompt.tag", prompt["tag"])
+            span.set_attribute("prompt.version_id", prompt["version_id"] or "fallback")
+            span.set_attribute("prompt.source", prompt["source"])
+
+        final_answer = await self.llm.complete(
+            system=prompt["content"],
+            user=json.dumps(...),
+        )
+
 
         final_answer = await self.llm.complete(
             system = get_finalize_system(),

@@ -1,5 +1,7 @@
 from __future__ import annotations
 import json
+from opentelemetry import trace
+
 
 from app.agents.base import BaseAgent
 from app.agents.prompts import (
@@ -17,17 +19,18 @@ class DraftingAgent(BaseAgent):
     def __init__(self, llm) -> None:
         self.llm = llm
 
-    def _select_prompt(self, task_type: str) -> str:
-        if task_type == "summary":
-            return get_summary_draft_system()
-        if task_type == "timeline":
-            return get_timeline_draft_system()
-        if task_type == "risk_review":
-            return get_risk_review_draft_system()
-        if task_type == "next_steps":
-            return get_next_steps_draft_system()
-
+    def _select_prompt(self, task_type: str) -> dict[str, str | None]:
+    if task_type == "summary":
         return get_summary_draft_system()
+    if task_type == "timeline":
+        return get_timeline_draft_system()
+    if task_type == "risk_review":
+        return get_risk_review_draft_system()
+    if task_type == "next_steps":
+        return get_next_steps_draft_system()
+
+    return get_summary_draft_system()
+
 
 
 
@@ -46,6 +49,19 @@ class DraftingAgent(BaseAgent):
             }
             for doc in docs
         ]
+        prompt = self._select_prompt(state["task_type"])
+        span = trace.get_current_span()
+        if span is not None:
+            span.set_attribute("prompt.name", prompt["name"])
+            span.set_attribute("prompt.tag", prompt["tag"])
+            span.set_attribute("prompt.version_id", prompt["version_id"] or "fallback")
+            span.set_attribute("prompt.source", prompt["source"])
+
+        answer = await self.llm.complete(
+            system=prompt["content"],
+            user=json.dumps(...),
+        )
+
 
         answer = await self.llm.complete(
             system = self._select_prompt(state["task_type"]),

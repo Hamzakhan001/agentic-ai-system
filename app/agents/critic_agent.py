@@ -3,6 +3,7 @@ import json
 from app.agents.base import BaseAgent
 from app.agents.prompts import get_critique_system
 from app.agents.state import AgentState
+from opentelemetry import trace
 
 
 class CriticAgent(BaseAgent):
@@ -32,6 +33,18 @@ class CriticAgent(BaseAgent):
             for doc in docs
         ]
 
+        prompt = get_critique_system()
+        span = trace.get_current_span()
+        if span is not None:
+            span.set_attribute("prompt.name", prompt["name"])
+            span.set_attribute("prompt.tag", prompt["tag"])
+            span.set_attribute("prompt.version_id", prompt["version_id"] or "fallback")
+            span.set_attribute("prompt.source", prompt["source"])
+
+        critique_result = await self.llm.json_response(
+            system=prompt["content"],
+            user=json.dumps(...),
+        )
         critique_result = await self.llm.json_response(
             system = get_critique_system(),
             user = json.dumps(
