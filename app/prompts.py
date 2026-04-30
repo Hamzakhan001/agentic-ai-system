@@ -13,18 +13,18 @@ RAG_PROMPT_FALLBACK = (
 )
 
 
-@lru_cache(maxsize=1)
-def get_rag_prompt_template() -> str:
+@lru_cache(maxsize=64)
+def get_prompt_text(prompt_identifier:str, fallback:str, tag:str = "production") -> str:
     try:
         from phoenix.client import Client
-        client = Client()
 
+        client = Client()
         prompt = client.prompts.get(
-            prompt_identifier = "rag-answer-prompt",
-            tag="production"
+            prompt_identifier = prompt_identifier,
+            tag=tag
         )
         messages = prompt.version.template.messages
-        system_message = next (m for m in messages if m["role"] == "system")
+        system_message = next(m for m in messages if m["role"] == "system")
         return system_message["content"]
     except Exception:
-        return RAG_PROMPT_FALLBACK
+        return fallback
