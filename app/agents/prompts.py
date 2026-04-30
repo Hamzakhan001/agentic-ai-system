@@ -1,5 +1,7 @@
 from __future__ import annotations
-from app.prompts import get_prompt_text
+from app.prompts import get_prompt
+from opentelemetry import trace
+
 
 
 TASK_CLASSIFIER_SYSTEM_FALLBACK = """
@@ -140,8 +142,8 @@ Rules:
 - Keep the final answer concise and professional.
 """
 
-def get_task_classifier_system() -> str:
-    return get_prompt_text("task-classifier-system", TASK_CLASSIFIER_SYSTEM_FALLBACK)
+def get_task_classifier_system() -> dict[str, str | None]:
+    return get_prompt("task-classifier-system", TASK_CLASSIFIER_SYSTEM_FALLBACK)
 
 
 def get_extraction_system() -> str:
