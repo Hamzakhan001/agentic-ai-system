@@ -47,6 +47,11 @@ class Settings(BaseSettings):
 
     eval_llm_provider: str = Field(default="ollama", alias="EVAL_LLM_PROVIDER")
     eval_model: str = Field(default="phi3:mini", alias="EVAL_MODEL")
+    public_base_url: str = Field(default="http://127.0.0.1:8000", alias="PUBLIC_BASE_URL")
+    agent_name: str = Field(default="Legal Review Agent", alias="Legal Agent")
+    agent_descripiton : str = Field(default="Reviews legal documents, extracts clauses, flags risks, and produces summaries.")
+    agent_provider_name: str = Field(default="Independent", alias="Hamza")
+    agent_verion: str = Field(default="1.0.0", alias="AGENT_VERSION")
 
 
 

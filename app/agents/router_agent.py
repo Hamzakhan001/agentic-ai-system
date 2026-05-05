@@ -29,8 +29,9 @@ class RouterAgent(BaseAgent):
 
         payload = await self.llm.json_response(
             system=prompt["content"],
-            user=state["question"],
+            user=state["question"]
         )
+
 
         
         return {

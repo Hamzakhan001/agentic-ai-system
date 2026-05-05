@@ -18,17 +18,23 @@ def get_prompt(
             tag=tag,
         )
 
-        messages = prompt.version.template.messages
+        messages = prompt._template["messages"]
         system_message = next(m for m in messages if m["role"] == "system")
+        system_text = "\n".join(
+            block["text"]
+            for block in system_message["content"]
+            if block.get("type") == "text"
+        )
 
         return {
             "name": prompt_identifier,
             "tag": tag,
-            "version_id": getattr(prompt.version, "id", None),
-            "content": system_message["content"],
+            "version_id": prompt.id,
+            "content": system_text,
             "source": "phoenix",
         }
-    except Exception:
+    except Exception as exc:
+        print(f"PHOENIX PROMPT FETCH FAILED: {prompt_identifier}: {exc}")
         return {
             "name": prompt_identifier,
             "tag": tag,
